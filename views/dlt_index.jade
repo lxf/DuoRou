@@ -1,0 +1,42 @@
+﻿extends layout
+block content
+	div#container.container
+		for item in data
+			div.panel.panel-primary
+				div.panel-heading
+					h3.panel-title
+						| #{item.date}
+				div.panel-body
+					div.row.index_body
+						span.col-xs-1.colspan 红球1
+						span.col-xs-1.colspan 红球2
+						span.col-xs-1.colspan 红球3
+						span.col-xs-1.colspan 红球4
+						span.col-xs-1.colspan 红球5
+						span.col-xs-1.colspan 篮球1
+						span.col-xs-1.colspan 篮球2
+					div.row.index_body
+						span.col-xs-1.colspan.r 
+							.a
+								p #{item.r1}
+						span.col-xs-1.colspan.r 
+							.a
+								p #{item.r2}
+						span.col-xs-1.colspan.r 
+							.a
+								p #{item.r3}
+						span.col-xs-1.colspan.r 
+							.a
+								p #{item.r4}
+						span.col-xs-1.colspan.r 
+							.a
+								p #{item.r5}
+						span.col-xs-1.colspan.b 
+							.a
+								p #{item.b1}
+						span.col-xs-1.colspan.b 
+							.a
+								p #{item.b2}
+	.container
+		button.col-xs-12.btn.btn-primary#btn_showall(ng-click='showAllData(2)') 显示全部数据
+	include footer.jade
