@@ -43,7 +43,7 @@ var config = {
         article_title_id:'',
         article_title_class:'.ph',
         a_reg:/<a\s*href="(.*?)">/g,
-        img_reg:/<img\s*src="(.*?)">/g,
+        img_reg:/<img\s*src="data(.*?)">/g,
         global_reg_replace:/".*\//g,
         imgname_reg:/(\w+\.(?:png|jpg|gif|bmp))$/,
     }
