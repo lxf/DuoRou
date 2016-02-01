@@ -2,3 +2,35 @@
 2.抓取每页中的文章链接存入Mongodb中（加上标示是否已经抓取，抓取时间）
 3.服务自动跑Mongodb中的任务URL抓取文章
 4.分析文章结构存取（文章内容与图片）
+
+
+bug to fix:
+1.既然用控制了，为什么会出现：
+
+ttp://www.rou01.com/data/attachment/portal/201509/18/081433i4h6rd59oq69sf9q.jpg下载成功!
+http://www.rou01.com/data/attachment/portal/201511/11/155759kcxiihl341xiiw81.jpg下载成功!
+http://www.rou01.com/data/attachment/portal/201511/11/155758gt1t08pxipji9kcc.jpg下载成功!
+http://www.rou01.com/data/attachment/portal/201511/03/120756vfzpnvhf5lqz1r58.jpg下载成功!
+保存及更新状态成功!
+保存及更新状态成功!
+保存及更新状态成功!
+保存及更新状态成功!
+保存及更新状态成功!
+保存及更新状态成功!
+保存及更新状态成功!
+保存及更新状态成功!
+http://www.rou01.com/data/attachment/portal/201503/25/095251ztpbpizcmbmpymzp.jpg.thumb.jpg下载成功!
+http://www.rou01.com/data/attachment/portal/201504/14/095834us6oykz92kdlz9zl.jpg.thumb.jpg下载成功!
+http://www.rou01.com/data/attachment/portal/201509/18/081429c4h55lx7qh5pqpj9.jpg下载成功!
+http://www.rou01.com/data/attachment/portal/201509/05/111702eajp55i8h6fydyff.jpg下载成功!
+----->当前任务号:1013,总任务数:2202,链接:http://www.rou01.com/article-193-1.html
+保存及更新状态成功!
+http://www.rou01.com/data/attachment/portal/201509/29/154956pg999u84vx89mmm4.png下载成功!
+http://www.rou01.com/data/attachment/portal/201511/12/220253gi2aufl82e7ddffa.jpg下载成功!
+*******连接出错*******:Error: ESOCKETTIMEDOUT
+*******正在进行第[1]次重连
+
+
+2.照理说“重新连接”为什么感觉没有成功的
+
+3.

@@ -57,6 +57,13 @@ exports.test = function () {
     // urllist.push('http://www.rou01.com/article-720-1.html');
     // grabSinglePage(urllist[indexurl]);
     try {
+        
+        if(urllist.length!=0)
+        {
+            console.log('********上一次任务还未结束,本次不执行********');
+            return
+        }
+        
         async.waterfall([
             function (callback) {
                 URLModel.getData({ 'level': 2 }, {}, function (err, result) {
@@ -156,14 +163,15 @@ function grabSinglePage(url) {
         async.parallel({
             downImg: function (done) {
                 calls = [];
+                res = [];
                 while ((match = config.grab_config.img_reg.exec(content)) != null) {
                     res.push(match[1]);
                     var filename = match[1].substring(match[1].lastIndexOf('/') + 1);
                     calls.push(
-                        setTimeout(function () {
+                        // setTimeout(function () {
                             SaveImgCtrl.saveImgToLocal(match[1], config.grab_config.imgsavepath, filename, function (msg) {
                                 console.log(msg);
-                            }, 100);
+                            // }, 100);
                         }));
                 }
 
@@ -197,6 +205,7 @@ function grabSinglePage(url) {
                 ArticleModel.save(article, function (result) {
                     //更新抓取链接的状态
                     URLModel.partialUpdate(url, function (res) {
+                        //为什么会连续显示以下这句呢
                         console.log('保存及更新状态成功!');
                     })
                 });
