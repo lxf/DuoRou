@@ -3,9 +3,10 @@ var path = require("path");
 var fs = require("fs");
 var config = require('../config/config');
 var async = require('async');
+var reconnect_imgdown_time = 3;//当请求超时时，重试次数
 
 exports.saveImgToLocal = function (partialpath, savepath, filename, callback) {
-    var url = config.grab_config.host + partialpath;
+    var url = config.grab_config.host + 'data' + partialpath;
     http.get(url, function (res) {
         var imgData = "";
         res.setEncoding("binary"); //一定要设置response的编码为binary否则会下载下来的图片打不开
@@ -16,19 +17,34 @@ exports.saveImgToLocal = function (partialpath, savepath, filename, callback) {
 
         res.on("end", function () {
             fs.writeFile(savepath + filename, imgData, "binary", function (err) {
+                reconnect_imgdown_time = 0;
                 if (err) {
                     callback("图片下载失败!" + url);
                 } else {
-                    //替换内容中的图片地址
-                    // fs.writeFile(path.join(__dirname, 'log.txt'), content, 'utf8', function (err) {
-                    //     if (err) throw err;
-                    //     console.log("写入成功!");
-                    // });
-                    console.log(filename + "下载成功!");
-                    callback(null);
+                    callback(url + "下载成功!");
                 }
             });
         });
+
+        res.on('error', function (err) {
+            console.log(url + "-->下载出错");
+        });
+    }).on('error', function (err) {
+        if (err.code == 'ETIMEDOUT') {
+            console.log('图片连接超时!');
+        }
+        else {
+            console.log('*******图片连接出错*******:' + err + ',链接:' + url);
+        }
+        
+        if (reconnect_imgdown_time < 3) {
+            reconnect_imgdown_time++;
+            console.log('*******[图片]正在进行第' + reconnect_imgdown_time + '次重连*******,链接:' + url);
+            arguments.callee(url, callback);
+        }
+        else {
+            console.log('*******[图片]尝试重新连接失败*******');
+        }
     });
 }
 
@@ -66,7 +82,7 @@ exports.saveImgsToLocal = function (imgarr, savepath, callback1) {
                 });
             });
         });
-    },function(err){
+    }, function (err) {
         console.log(err);
     });
 }

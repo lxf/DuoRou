@@ -12,6 +12,3 @@ exports.RunGrab = function () {
     //3.抓取文章
     pagectrl.test();
 }
-
-
-

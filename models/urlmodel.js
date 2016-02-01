@@ -20,6 +20,7 @@ URLDAO.prototype.save = function (obj, cb) {
 
 URLDAO.prototype.getData = function (query, opts, callback) {
     URLModel.find(query, '', opts, callback);
+    
 };
 
 URLDAO.prototype.partialUpdate = function (url, callback) {

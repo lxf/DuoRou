@@ -1,0 +1,11 @@
+﻿extends layout
+block content
+	div#container.container(ng-repeat='item in data')
+			div.panel.panel-primary
+				div.panel-heading
+					h3.panel-title
+						{{item.title}}
+				div.panel-body(ng-bind-html='item.content|trustHtml')
+	.container
+		button.col-xs-12.btn.btn-primary#btn_showall(ng-click='showAllData(2)') 显示全部数据
+	include footer.jade

@@ -34,7 +34,7 @@ var config = {
         sinlepagepattern:'http://www.rou01.com/zixun/index.php?page=',//分页链接的模式
         haslastpage:true,//分页中是否含有最后一页的页码
         lastpageofa:9,//最后一页对应的a标签所在索引
-        imgsavepath:'imgs/',
+        imgsavepath:'public/images/imgs/',
         pagelist_page_id:'',
         pagelist_page_class:'.xs2a',
         pagelist_page_a_class:'.xi2',//文章的a标签的class

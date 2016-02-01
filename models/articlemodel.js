@@ -16,4 +16,8 @@ ArticleDAO.prototype.save = function (obj, cb) {
 	instance.save(cb);
 };
 
+ArticleDAO.prototype.getData = function (query, opts, callback) {
+		ArticleModel.find(query, '', opts, callback);
+};
+
 module.exports = new ArticleDAO();
