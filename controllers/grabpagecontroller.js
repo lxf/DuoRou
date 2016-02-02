@@ -102,11 +102,11 @@ function grabSinglePage(url) {
         async.series([
             function (callback) {
                 //替换路径
-                if (res.length > 0) {
-                    res[0] = 'data' + res[0];
-                    var filter = res[0].substring(0, res[0].lastIndexOf('/') + 1);
-                    content = content.replace(new RegExp(filter, 'gi'), 'public/imgs/');
-                }
+                // if (res.length > 0) {
+                res[0] = 'data' + res[0];
+                var filter = res[0].substring(0, res[0].lastIndexOf('/') + 1);
+                content = content.replace(new RegExp(filter, 'gi'), 'public/imgs/');
+                // }
                                     
                 //过滤一些脚本
                 if (content != '' && content != null) {
@@ -251,6 +251,10 @@ function fetchContent(url, callback) {
         }).on('data', function (chunk) {
             bufferHelper.concat(chunk);
         }).on('end', function () {
+            if (reconnect_time > 0) {
+                console.log('******【第[' + reconnect_time + ']次重连SUCCESS】******');
+            }
+            reconnect_time = 0;
             var result = iconv.decode(bufferHelper.toBuffer(), 'GBK');
             callback(result);
         }).on('error', function (err) {
