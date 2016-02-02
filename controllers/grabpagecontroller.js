@@ -67,13 +67,18 @@ exports.test = function () {
         async.waterfall([
             function (callback) {
                 //limit: 30
-                URLModel.getData({ 'level': 2 }, {  }, function (err, result) {
-                    _.each(result, function (ele, index, list) {
-                        urllist.push(ele.graburl);
-                    });
-                    setTimeout(function () {
-                        callback(null, urllist);
-                    }, 1000);
+                URLModel.getData({ 'level': 2, 'isgrabed': false }, {}, function (err, result) {
+                    if (result.length == 0) {
+                        console.log('******【没有可抓取的数据】******');
+                        process.exit();
+                    } else {
+                        _.each(result, function (ele, index, list) {
+                            urllist.push(ele.graburl);
+                        });
+                        setTimeout(function () {
+                            callback(null, urllist);
+                        }, 1000);
+                    }
                 });
             },
             function (data, callback) {
