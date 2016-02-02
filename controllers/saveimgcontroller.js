@@ -19,32 +19,32 @@ exports.saveImgToLocal = function (partialpath, savepath, filename, callback) {
             fs.writeFile(savepath + filename, imgData, "binary", function (err) {
                 reconnect_imgdown_time = 0;
                 if (err) {
-                    callback("图片下载失败!" + url);
+                    callback("图片下载失败!" + url + err, null);
                 } else {
-                    callback(url + "下载成功!");
+                    callback(null, url + "下载成功!");
                 }
             });
         });
 
         res.on('error', function (err) {
-            console.log(url + "-->下载出错");
+            callback(url + "-->下载出错", null);
         });
+
     }).on('error', function (err) {
         if (err.code == 'ETIMEDOUT') {
-            console.log('图片连接超时!');
+            callback('*******图片连接超时*******:' + err + ',链接:' + url, null);
         }
         else {
-            console.log('*******图片连接出错*******:' + err + ',链接:' + url);
+            callback('*******图片连接出错*******:' + err + ',链接:' + url, null);
         }
-        
-        if (reconnect_imgdown_time < 3) {
-            reconnect_imgdown_time++;
-            console.log('*******[图片]正在进行第' + reconnect_imgdown_time + '次重连*******,链接:' + url);
-            arguments.callee(url, callback);
-        }
-        else {
-            console.log('*******[图片]尝试重新连接失败*******');
-        }
+        // if (reconnect_imgdown_time < 3) {
+        //     reconnect_imgdown_time++;
+        //     console.log('*******[图片]正在进行第' + reconnect_imgdown_time + '次重连*******,链接:' + url);
+        //     arguments.callee(url, callback);
+        // }
+        // else {
+        //     console.log('*******[图片]尝试重新连接失败*******');
+        // }
     });
 }
 

@@ -57,16 +57,15 @@ exports.test = function () {
     // urllist.push('http://www.rou01.com/article-720-1.html');
     // grabSinglePage(urllist[indexurl]);
     try {
-        
-        if(urllist.length!=0)
-        {
-            console.log('********上一次任务还未结束,本次不执行********');
-            return
+
+        if (urllist.length != 0) {
+            console.log('******【上一次任务还未结束,本次不执行】******');
+            return;
         }
-        
+
         async.waterfall([
             function (callback) {
-                URLModel.getData({ 'level': 2 }, {}, function (err, result) {
+                URLModel.getData({ 'level': 2 }, { limit: 30 }, function (err, result) {
                     _.each(result, function (ele, index, list) {
                         urllist.push(ele.graburl);
                     });
@@ -79,12 +78,12 @@ exports.test = function () {
                 grabSinglePage(urllist[indexurl]);
             }
         ], function (err, data) {
-            console.log('******async error*******:' + err)
+            console.log('******【async.waterfall】******:' + err)
         });
     }
     catch (e) {
-        console.log('******ERROR**ERROR*****:' + e);
-        writeLog('******ERROR**ERROR*****:' + e);
+        console.log('******【ERROR】******:' + e);
+        writeLog('******【ERROR】******:' + e);
     }
 }
 
@@ -100,129 +99,142 @@ function grabSinglePage(url) {
             calls = [],
             match;
 
-        //         async.series([
-        //             function (callback) {
-        //                 //替换路径
-        //                 if (res.length > 0) {
-        //                     res[0] = 'data' + res[0];
-        //                     var filter = res[0].substring(0, res[0].lastIndexOf('/') + 1);
-        //                     content = content.replace(new RegExp(filter, 'gi'), 'public/imgs/');
-        //                 }
-        //             
-        //                 //过滤一些脚本
-        //                 if (content != '' && content != null) {
-        //                     content = content.replace(new RegExp('<p><font size="2px">[\\w\\W]*'), '');
-        //                 }
-        //               
-        //                 //存储
-        //                 var article = { title: title, content: content, createdate: new Date() };
-        // 
-        //                 ArticleModel.save(article, function (result) {
-        //                     //更新抓取链接的状态
-        //                     URLModel.partialUpdate(url, function (res) {
-        //                         console.log('保存及更新状态成功!');
-        //                     })
-        //                 });
-        // 
-        //                 callback();
-        //             },
-        //             function (callback) {
-        //                 while ((match = config.grab_config.img_reg.exec(content)) != null) {
-        //                     res.push(match[1]);
-        //                     var filename = match[1].substring(match[1].lastIndexOf('/') + 1);
-        //                     calls.push(
-        //                         setTimeout(function () {
-        //                             SaveImgCtrl.saveImgToLocal(match[1], config.grab_config.imgsavepath, filename, function (msg) {
-        //                                 console.log(msg);
-        //                             }, 100);
-        //                         }));
-        //                 }
-        // 
-        //                 async.parallel(calls, function (err, results) {
-        //                     if (err) return callback(err);
-        //                     console.log('finish');
-        //                     callback();
-        //                 });
-        // 
-        //                 callback();
-        //             },
-        // 
-        //         ], function (error) {
-        //             //sleep
-        //             reconnect_time = 0;
-        //             indexurl++;
-        //             if (urllist.length == indexurl) {
-        //                 console.log('任务完成!');
-        //             }
-        //             else {
-        //                 grabSinglePage(urllist[indexurl]);
-        //             }
-        //         });
-
-  
-        async.parallel({
-            downImg: function (done) {
-                calls = [];
-                res = [];
-                while ((match = config.grab_config.img_reg.exec(content)) != null) {
-                    res.push(match[1]);
-                    var filename = match[1].substring(match[1].lastIndexOf('/') + 1);
-                    calls.push(
-                        // setTimeout(function () {
-                            SaveImgCtrl.saveImgToLocal(match[1], config.grab_config.imgsavepath, filename, function (msg) {
-                                console.log(msg);
-                            // }, 100);
-                        }));
-                }
-
-                async.parallel(calls, function (err, results) {
-                    if (err) {
-                        console.log('error');
-                    }
-                    else {
-                        console.log('finish');
-                    }
-                });
-
-                done(null, null);
-            },
-            saveContent: function (done) {
+        async.series([
+            function (callback) {
                 //替换路径
                 if (res.length > 0) {
                     res[0] = 'data' + res[0];
                     var filter = res[0].substring(0, res[0].lastIndexOf('/') + 1);
                     content = content.replace(new RegExp(filter, 'gi'), 'public/imgs/');
                 }
-                    
+                                    
                 //过滤一些脚本
                 if (content != '' && content != null) {
                     content = content.replace(new RegExp('<p><font size="2px">[\\w\\W]*'), '');
                 }
-                      
+                                      
                 //存储
                 var article = { title: title, content: content, createdate: new Date() };
 
                 ArticleModel.save(article, function (result) {
                     //更新抓取链接的状态
-                    URLModel.partialUpdate(url, function (res) {
-                        //为什么会连续显示以下这句呢
-                        console.log('保存及更新状态成功!');
+                    URLModel.partialUpdate(url, function (err, res) {
+                        if (err) {
+                            callback(err, null);
+                        }
+                        else {
+                            console.log('******【保存及更新状态成功】******');
+                            callback(null, res);
+                        }
                     })
                 });
+            },
+            function (callback) {
+                calls = [];
+                res = [];
+                while ((match = config.grab_config.img_reg.exec(content)) != null) {
+                    res.push(match[1]);
+                    var filename = match[1].substring(match[1].lastIndexOf('/') + 1);
+                    calls.push(
+                        SaveImgCtrl.saveImgToLocal(match[1], config.grab_config.imgsavepath, filename, function (err, msg) {
+                            callback(err, msg);
+                        }));
+                }
 
-                done(null, null);
-            }
-        }, function (error, result) {
-            //sleep
-            reconnect_time = 0;
-            indexurl++;
-            if (urllist.length == indexurl) {
-                console.log('任务完成!');
+                async.parallel(calls, function (err, results) {
+                    if (err) {
+                        console.log('******【ERROR】******' + err);
+                        callback(err, null);
+                    }
+                    else {
+                        console.log('******【SUCCESS】******' + results);
+                        callback(null, results);
+                    }
+                });
+            },
+        ], function (error, results) {
+            //这边有点问题
+            if (error) {
+                console.log('******【链接下载失败】【失败原因:' + error + '】******');
             }
             else {
-                grabSinglePage(urllist[indexurl]);
+                reconnect_time = 0;
+                indexurl++;
+                if (urllist.length < indexurl) {
+                    console.log('******【任务全部完成】******');
+                }
+                else {
+                    grabSinglePage(urllist[indexurl]);
+                }
             }
+
         });
+
+        /* 之前的写法
+              async.parallel({
+                  downImg: function (done) {
+                      calls = [];
+                      res = [];
+                      while ((match = config.grab_config.img_reg.exec(content)) != null) {
+                          res.push(match[1]);
+                          var filename = match[1].substring(match[1].lastIndexOf('/') + 1);
+                          calls.push(
+                              // setTimeout(function () {
+                                  SaveImgCtrl.saveImgToLocal(match[1], config.grab_config.imgsavepath, filename, function (msg) {
+                                      console.log(msg);
+                                  // }, 100);
+                              }));
+                      }
+      
+                      async.parallel(calls, function (err, results) {
+                          if (err) {
+                              console.log('error');
+                          }
+                          else {
+                              console.log('finish');
+                          }
+                      });
+      
+                      done(null, null);
+                  },
+                  saveContent: function (done) {
+                      //替换路径
+                      if (res.length > 0) {
+                          res[0] = 'data' + res[0];
+                          var filter = res[0].substring(0, res[0].lastIndexOf('/') + 1);
+                          content = content.replace(new RegExp(filter, 'gi'), 'public/imgs/');
+                      }
+                          
+                      //过滤一些脚本
+                      if (content != '' && content != null) {
+                          content = content.replace(new RegExp('<p><font size="2px">[\\w\\W]*'), '');
+                      }
+                            
+                      //存储
+                      var article = { title: title, content: content, createdate: new Date() };
+      
+                      ArticleModel.save(article, function (result) {
+                          //更新抓取链接的状态
+                          URLModel.partialUpdate(url, function (res) {
+                              //为什么会连续显示以下这句呢
+                              console.log('保存及更新状态成功!');
+                          })
+                      });
+      
+                      done(null, null);
+                  }
+              }, function (error, result) {
+                  //sleep
+                  reconnect_time = 0;
+                  indexurl++;
+                  if (urllist.length == indexurl) {
+                      console.log('任务完成!');
+                  }
+                  else {
+                      grabSinglePage(urllist[indexurl]);
+                  }
+              });
+              */
     });
 
 }
@@ -243,24 +255,24 @@ function fetchContent(url, callback) {
             callback(result);
         }).on('error', function (err) {
             if (err.code == 'ETIMEDOUT') {
-                console.log('读取数据超时!');
+                console.log('******【读取数据超时】******');
                 writeLog(err);
             }
             else {
                 writeLog(err);
-                console.log('*******连接出错*******:' + err);
+                console.log('******【连接出错】******:' + err);
             }
 
             if (reconnect_time < 3) {
                 //准备重连    
                 reconnect_time++;
-                console.log('*******正在进行第[' + reconnect_time + ']次重连*******');
+                console.log('******【正在进行第[' + reconnect_time + ']次重连】******');
                 //sleep some time
                 sleep(reconnect_time);
                 fetchContent(url, callback);
             }
             else {
-                console.log('*******尝试重新连接失败*******');
+                console.log('******【尝试重新连接失败】******');
             }
         });
     }

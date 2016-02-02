@@ -12,7 +12,6 @@ var config = require('./config/config');
 var robot = require('./controllers/grabcontroller');
 
 var accessLog = fs.createWriteStream('access.log', { flags: 'a' });
-
 var app = express();
 
 var approute = require('./route');
@@ -47,15 +46,13 @@ var j = schedule.scheduleJob(rule, function () {
 */
 
 //每小时在30分种的时候抓取
-var schedule = require('node-schedule');
-
-var rule = new schedule.RecurrenceRule();
-rule.minute = 1;
-
-var j = schedule.scheduleJob(rule, function () {
-    console.log('开始抓取.....');
-    robot.RunGrab();
-});
+// var rule = new schedule.RecurrenceRule();
+// rule.minute = 1;
+// 
+// var j = schedule.scheduleJob(rule, function () {
+//     console.log('running.....');
+//     robot.RunGrab();
+// });
 
 app.use('/', approute);
 
