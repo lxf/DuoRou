@@ -16,7 +16,8 @@ var URLModel = require('../models/URLModel');
 var SaveImgCtrl = require('./saveimgcontroller');
 var urllist = [];
 var indexurl = 0;
-var reconnect_time = 3;//connect timeout,retry times
+var cur_reconnect_time = 0;//connect timeout,retry times
+var reconnect_time = config.reconnect_time;
 var options = {
     method: 'GET',
     url: '',
@@ -101,35 +102,6 @@ function grabSinglePage(url) {
 
         async.series([
             function (callback) {
-                //替换路径
-                // if (res.length > 0) {
-                res[0] = 'data' + res[0];
-                var filter = res[0].substring(0, res[0].lastIndexOf('/') + 1);
-                content = content.replace(new RegExp(filter, 'gi'), 'public/imgs/');
-                // }
-                                    
-                //过滤一些脚本
-                if (content != '' && content != null) {
-                    content = content.replace(new RegExp('<p><font size="2px">[\\w\\W]*'), '');
-                }
-                                      
-                //存储
-                var article = { title: title, content: content, createdate: new Date() };
-
-                ArticleModel.save(article, function (result) {
-                    //更新抓取链接的状态
-                    URLModel.partialUpdate(url, function (err, res) {
-                        if (err) {
-                            callback(err, null);
-                        }
-                        else {
-                            console.log('******【保存及更新状态成功】******');
-                            callback(null, res);
-                        }
-                    })
-                });
-            },
-            function (callback) {
                 calls = [];
                 res = [];
                 while ((match = config.grab_config.img_reg.exec(content)) != null) {
@@ -152,14 +124,43 @@ function grabSinglePage(url) {
                     }
                 });
             },
+            function (callback) {
+                if (res.length > 0) {
+                    res[0] = 'data' + res[0];
+                    var filter = res[0].substring(0, res[0].lastIndexOf('/') + 1);
+                    content = content.replace(new RegExp(filter, 'gi'), 'public/imgs/');
+                }
+                                    
+                //过滤一些脚本
+                if (content != '' && content != null) {
+                    content = content.replace(new RegExp('<p><font size="2px">[\\w\\W]*'), '');
+                }
+                                      
+                //存储
+                var article = { title: title, content: content, createdate: new Date() };
+
+                ArticleModel.save(article, function (result) {
+                    //更新抓取链接的状态
+                    URLModel.partialUpdate(url, function (err, res) {
+                        if (err) {
+                            callback(err, null);
+                        }
+                        else {
+                            console.log('******【保存及更新状态成功】******');
+                            callback(null, res);
+                        }
+                    })
+                });
+            },
         ], function (error, results) {
             //这边有点问题
             if (error) {
                 console.log('******【链接下载失败】【失败原因:' + error + '】******');
             }
             else {
-                reconnect_time = 0;
+                //这边不对，一直不停止
                 indexurl++;
+                console.log('******[indexurl:' + indexurl + ']******');
                 if (urllist.length < indexurl) {
                     console.log('******【任务全部完成】******');
                 }
@@ -242,7 +243,7 @@ function grabSinglePage(url) {
 //返回内容
 function fetchContent(url, callback) {
     if (url != undefined) {
-        console.log((reconnect_time != 0 ? ('[' + reconnect_time + ']') : '') + '----->当前任务号:' + indexurl + ",总任务数:" + urllist.length + ",链接:" + url);
+        console.log((cur_reconnect_time != 0 ? ('[' + cur_reconnect_time + ']') : '') + '----->当前任务号:' + indexurl + ",总任务数:" + urllist.length + ",链接:" + url);
 
         var bufferHelper = new BufferHelper();
         options.url = url;
@@ -251,10 +252,10 @@ function fetchContent(url, callback) {
         }).on('data', function (chunk) {
             bufferHelper.concat(chunk);
         }).on('end', function () {
-            if (reconnect_time > 0) {
-                console.log('******【第[' + reconnect_time + ']次重连SUCCESS】******');
+            if (cur_reconnect_time > 0) {
+                console.log('******【第[' + (3 - reconnect_time) + ']次重连SUCCESS】******');
             }
-            reconnect_time = 0;
+            cur_reconnect_time = 0;
             var result = iconv.decode(bufferHelper.toBuffer(), 'GBK');
             callback(result);
         }).on('error', function (err) {
@@ -267,12 +268,12 @@ function fetchContent(url, callback) {
                 console.log('******【连接出错】******:' + err);
             }
 
-            if (reconnect_time < 3) {
+            if (cur_reconnect_time < reconnect_time) {
                 //准备重连    
-                reconnect_time++;
-                console.log('******【正在进行第[' + reconnect_time + ']次重连】******');
+                cur_reconnect_time++;
+                console.log('******【正在进行第[' + cur_reconnect_time + ']次重连】******');
                 //sleep some time
-                sleep(reconnect_time);
+                sleep(cur_reconnect_time);
                 fetchContent(url, callback);
             }
             else {
