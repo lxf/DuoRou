@@ -66,7 +66,8 @@ exports.test = function () {
 
         async.waterfall([
             function (callback) {
-                URLModel.getData({ 'level': 2 }, { limit: 30 }, function (err, result) {
+                //limit: 30
+                URLModel.getData({ 'level': 2 }, {  }, function (err, result) {
                     _.each(result, function (ele, index, list) {
                         urllist.push(ele.graburl);
                     });
@@ -149,7 +150,7 @@ function grabSinglePage(url) {
                             console.log('******【保存及更新状态成功】******');
                             callback(null, res);
                         }
-                    })
+                    });
                 });
             },
         ], function (error, results) {
@@ -163,12 +164,12 @@ function grabSinglePage(url) {
                 console.log('******[indexurl:' + indexurl + ']******');
                 if (urllist.length < indexurl) {
                     console.log('******【任务全部完成】******');
+                    process.exit();
                 }
                 else {
                     grabSinglePage(urllist[indexurl]);
                 }
             }
-
         });
 
         /* 之前的写法
